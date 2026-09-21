@@ -1,0 +1,110 @@
+# ==========================================
+# FREITAS LOURENÇO - SISTEMA INTEGRADO PDV & ESTOQUE
+# ==========================================
+
+# Base de dados inicial (Memória do sistema)
+estoque = {
+    "001": {"nome": "Organizador de Gavetas", "preco": 29.90, "qtd": 15, "deposito": "Setor A"},
+    "002": {"nome": "Caixa Organizadora Plástica", "preco": 49.90, "qtd": 10, "deposito": "Setor B"},
+    "003": {"nome": "Suporte Inteligente para Celular", "preco": 39.90, "qtd": 20, "deposito": "Setor A"}
+}
+
+caixa_total = 0.0
+historico_vendas = []
+
+def exibir_menu():
+    print("\n" + "="*50)
+    print("      FREITAS LOURENÇO - GESTÃO & PDV COMERCIAL")
+    print("="*50)
+    print("1. Consultar Estoque e Depósito")
+    print("2. Cadastrar Novo Produto")
+    print("3. Realizar Venda (Caixa)")
+    print("4. Ver Histórico de Vendas e Caixa")
+    print("5. Sair")
+    print("="*50)
+
+def consultar_estoque():
+    print("\n--- [FREITAS LOURENÇO] CONSULTA DE ESTOQUE E DEPÓSITO ---")
+    for codigo, info in estoque.items():
+        print(f"Código: {codigo} | Produto: {info['nome']} | Preço: R$ {info['preco']:.2f} | Saldo: {info['qtd']} un. | Local: {info['deposito']}")
+
+def cadastrar_produto():
+    print("\n--- [FREITAS LOURENÇO] CADASTRAR NOVO PRODUTO ---")
+    codigo = input("Digite o código do produto (ex: 004): ")
+    if codigo in estoque:
+        print("Erro: Este código já existe!")
+        return
+    nome = input("Nome do produto: ")
+    try:
+        preco = float(input("Preço de venda (R$): "))
+        qtd = int(input("Quantidade inicial em estoque: "))
+    except ValueError:
+        print("Erro: Digite valores numéricos válidos para preço e quantidade.")
+        return
+    deposito = input("Localização no depósito (ex: Setor C): ")
+    
+    estoque[codigo] = {"nome": nome, "preco": preco, "qtd": qtd, "deposito": deposito}
+    print(f"Sucesso! Produto '{nome}' cadastrado na base da Freitas Lourenço.")
+
+def realizar_venda():
+    global caixa_total
+    print("\n--- [FREITAS LOURENÇO] CAIXA - PDV ---")
+    consultar_estoque()
+    codigo = input("\nDigite o código do produto que o cliente vai comprar: ")
+    
+    if codigo not in estoque:
+        print("Erro: Produto não encontrado.")
+        return
+    
+    try:
+        qtd_comprada = int(input(f"Quantidade de '{estoque[codigo]['nome']}' a vender: "))
+    except ValueError:
+        print("Erro: Quantidade inválida.")
+        return
+    
+    if qtd_comprada > estoque[codigo]["qtd"]:
+        print(f"Erro: Estoque insuficiente! Só temos {estoque[codigo]['qtd']} unidades disponíveis.")
+        return
+    
+    total_venda = qtd_comprada * estoque[codigo]["preco"]
+    
+    # Dá baixa automática no estoque/depósito
+    estoque[codigo]["qtd"] -= qtd_comprada
+    caixa_total += total_venda
+    
+    # Registra no histórico
+    venda_info = f"Produto: {estoque[codigo]['nome']} | Qtd: {qtd_comprada} | Total: R$ {total_venda:.2f}"
+    historico_vendas.append(venda_info)
+    
+    print("\n" + "VENDA REALIZADA COM SUCESSO!".upper())
+    print(f"Total a pagar: R$ {total_venda:.2f}")
+    print(f"Estoque atualizado do item: {estoque[codigo]['qtd']} restantes no {estoque[codigo]['deposito']}.")
+
+def ver_caixa():
+    print("\n--- [FREITAS LOURENÇO] FECHAMENTO DE CAIXA E HISTÓRICO ---")
+    print(f"Total faturado no Caixa: R$ {caixa_total:.2f}")
+    print("\nHistórico de Vendas da Sessão:")
+    if not historico_vendas:
+        print("Nenhuma venda realizada ainda.")
+    else:
+        for venda in historico_vendas:
+            print(f"- {venda}")
+
+# Loop principal do sistema
+while True:
+    exibir_menu()
+    opcao = input("Escolha uma opção (1-5): ")
+    
+    if opcao == "1":
+        consultar_estoque()
+    elif opcao == "2":
+        cadastrar_produto()
+    elif opcao == "3":
+        realizar_venda()
+    elif opcao == "4":
+        ver_caixa()
+    elif opcao == "5":
+        print("\nSaindo do sistema Freitas Lourenço. Até logo!")
+        break
+    else:
+        print("Opção inválida! Escolha um número entre 1 e 5.")
